@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Office Task Tracker</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 700px;
+        margin: 30px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+      }
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+      }
+      form {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      input,
+      select,
+      button {
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+      li {
+        background: #f9f9f9;
+        padding: 10px;
+        margin-bottom: 8px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .status {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Office Task Tracker</h1>
+
+    <form id="taskForm">
+      <input type="text" id="task" placeholder="Task name" required />
+      <input type="date" id="dueDate" required />
+      <select id="status">
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Done">Done</option>
+      </select>
+      <button type="submit">Add Task</button>
+    </form>
+
+    <h2>Task List</h2>
+    <ul id="taskList"></ul>
+
+    <script>
+      const API_URL =
+        "https://script.google.com/macros/s/AKfycbyCWs6tBsS_OXYbVRLBw9qxrrFKbhZK7gqW1NqwUtHd92C4sisgcw_87UWTuZGZ1_ct/exec"; // Replace this with your Google Apps Script Web App URL
+
+      // --- Load tasks from Google Sheets ---
+      async function loadTasks() {
+        const res = await fetch(API_URL);
+        const tasks = await res.json();
+
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+
+        if (tasks.length === 0) {
+          list.innerHTML = "<li>No tasks yet.</li>";
+          return;
+        }
+
+        tasks.forEach((t) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+          <span>${t.task} (Due: ${t.dueDate})</span>
+          <span class="status">${t.status}</span>
+        `;
+          list.appendChild(li);
+        });
+      }
+
+      // --- Add a new task ---
+      document
+        .getElementById("taskForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const task = document.getElementById("task").value;
+          const dueDate = document.getElementById("dueDate").value;
+          const status = document.getElementById("status").value;
+
+          await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ task, dueDate, status }),
+          });
+
+          e.target.reset();
+          loadTasks();
+        });
+
+      // Initial load
+      loadTasks();
+    </script>
+  </body>
+</html>

@@ -62,13 +62,21 @@
     <h1>Office Task Tracker</h1>
 
     <form id="taskForm">
+      <select id="assignedTo">
+        <option value="Dennis Ebora">Dennis Ebora</option>
+        <option value="Van Lagaras">Van Lagaras</option>
+        <option value="Van/Dennis">Van/Dennis</option>
+        <option value="Edmar Padayhag">Edmar Padayhag</option>
+      </select>
       <input type="text" id="task" placeholder="Task name" required />
+      <input type="date" id="startDate" required />
       <input type="date" id="dueDate" required />
       <select id="status">
         <option value="In Progress">In Progress</option>
         <option value="Completed">Completed</option>
         <option value="Delayed">Delayed</option>
       </select>
+      <input type="text" id="remarks" placeholder="Remarks" />
       <button type="submit">Add Task</button>
     </form>
 
@@ -77,8 +85,7 @@
 
     <script>
       const API_URL =
-        "https://script.google.com/macros/s/AKfycbyCWs6tBsS_OXYbVRLBw9qxrrFKbhZK7gqW1NqwUtHd92C4sisgcw_87UWTuZGZ1_ct/exec"; // Replace this with your Google Apps Script Web App URL
-
+        "https://script.google.com/macros/s/AKfycbyCWs6tBsS_OXYbVRLBw9qxrrFKbhZK7gqW1NqwUtHd92C4sisgcw_87UWTuZGZ1_ct/exec";
       // --- Load tasks from Google Sheets ---
       async function loadTasks() {
         const res = await fetch(API_URL);
@@ -95,8 +102,11 @@
         tasks.forEach((t) => {
           const li = document.createElement("li");
           li.innerHTML = `
-          <span>${t.task} (Due: ${t.dueDate})</span>
+          <span><strong>${t.task}</strong></span>
+          <span class="assignedTo">Assigned to: ${t.assignedTo}</span>
+          <span class="date">Start: ${t.startDate} | Due: ${t.dueDate}</span>
           <span class="status">${t.status}</span>
+          <span class="remarks">${t.remarks}</span>
         `;
           list.appendChild(li);
         });
@@ -107,13 +117,23 @@
         .getElementById("taskForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
+          const assignedTo = document.getElementById("assignedTo").value;
           const task = document.getElementById("task").value;
+          const startDate = document.getElementById("startDate").value;
           const dueDate = document.getElementById("dueDate").value;
           const status = document.getElementById("status").value;
+          const remarks = document.getElementById("remarks").value;
 
           await fetch(API_URL, {
             method: "POST",
-            body: JSON.stringify({ task, dueDate, status }),
+            body: JSON.stringify({
+              assignedTo,
+              task,
+              startDate,
+              dueDate,
+              status,
+              remarks,
+            }),
           });
 
           e.target.reset();

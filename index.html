@@ -12,49 +12,84 @@
         padding: 20px;
         border: 1px solid #ddd;
         border-radius: 10px;
+        background-color: #fafafa;
       }
+
       h1 {
         text-align: center;
         color: #2c3e50;
       }
+
       form {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
         gap: 10px;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        margin-bottom: 20px;
+        align-items: end;
+        margin-bottom: 25px;
       }
+
+      label {
+        display: block;
+        font-weight: bold;
+        font-size: 13px;
+        margin-bottom: 4px;
+        color: #34495e;
+      }
+
       input,
       select,
+      textarea,
       button {
-        padding: 10px;
+        padding: 8px;
         font-size: 14px;
         border: 1px solid #ccc;
         border-radius: 5px;
+        width: 100%;
       }
+
+      textarea {
+        grid-column: span 6;
+        min-height: 50px;
+      }
+
       button {
         background-color: #3498db;
         color: white;
+        font-weight: bold;
         cursor: pointer;
+        grid-column: span 6;
       }
+
       button:hover {
         background-color: #2980b9;
       }
-      ul {
-        list-style: none;
-        padding: 0;
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 14px;
       }
-      li {
-        background: #f9f9f9;
+
+      th,
+      td {
         padding: 10px;
-        margin-bottom: 8px;
-        border-radius: 5px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        border: 1px solid #ddd;
+        text-align: left;
       }
-      .status {
-        font-weight: bold;
+
+      th {
+        background-color: #3498db;
+        color: white;
+        text-align: center;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f2f2f2;
+      }
+
+      tr:hover {
+        background-color: #eaf3fc;
       }
     </style>
   </head>
@@ -62,26 +97,62 @@
     <h1>Office Task Tracker</h1>
 
     <form id="taskForm">
-      <select id="assignedTo">
-        <option value="Dennis Ebora">Dennis Ebora</option>
-        <option value="Van Lagaras">Van Lagaras</option>
-        <option value="Van/Dennis">Van/Dennis</option>
-        <option value="Edmar Padayhag">Edmar Padayhag</option>
-      </select>
-      <input type="text" id="task" placeholder="Task name" required />
-      <input type="date" id="startDate" required />
-      <input type="date" id="dueDate" required />
-      <select id="status">
-        <option value="In Progress">In Progress</option>
-        <option value="Completed">Completed</option>
-        <option value="Delayed">Delayed</option>
-      </select>
+      <div>
+        <label for="assignedTo">Assigned To</label>
+        <select id="assignedTo">
+          <option value="Dennis Ebora">Dennis Ebora</option>
+          <option value="Van Lagaras">Van Lagaras</option>
+          <option value="Van/Dennis">Van/Dennis</option>
+          <option value="Edmar Padayhag">Edmar Padayhag</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="task">Task</label>
+        <input type="text" id="task" placeholder="Task name" required />
+      </div>
+
+      <div>
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate" required />
+      </div>
+
+      <div>
+        <label for="dueDate">Due Date</label>
+        <input type="date" id="dueDate" required />
+      </div>
+
+      <div>
+        <label for="status">Status</label>
+        <select id="status">
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+          <option value="Delayed">Delayed</option>
+        </select>
+      </div>
+
       <input type="text" id="remarks" placeholder="Remarks" />
       <button type="submit">Add Task</button>
     </form>
 
     <h2>Task List</h2>
-    <ul id="taskList"></ul>
+    <table id="taskTable">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Assigned To</th>
+          <th>Start Date</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="6" style="text-align: center">Loading tasks...</td>
+        </tr>
+      </tbody>
+    </table>
 
     <script>
       const API_URL =
@@ -91,24 +162,26 @@
         const res = await fetch(API_URL);
         const tasks = await res.json();
 
-        const list = document.getElementById("taskList");
-        list.innerHTML = "";
+        const tableBody = document.getElementById("#taskTable tbody");
+        tableBody.innerHTML = "";
 
         if (tasks.length === 0) {
-          list.innerHTML = "<li>No tasks yet.</li>";
+          tableBody.innerHTML =
+            '<tr><td colspan="6" style="text-align:center;">No tasks found.</td></tr>';
           return;
         }
 
         tasks.forEach((t) => {
-          const li = document.createElement("li");
-          li.innerHTML = `
-          <span><strong>${t.task}</strong></span>
-          <span class="assignedTo">Assigned to: ${t.assignedTo}</span>
-          <span class="date">Start: ${t.startDate} | Due: ${t.dueDate}</span>
-          <span class="status">${t.status}</span>
-          <span class="remarks">${t.remarks}</span>
+          const row = document.createElement("tr");
+          row.innerHTML = `
+          <td>${t.task}</td>
+          <td>${t.assignedTo}</td>
+          <td>${t.startDate}</td>
+          <td>${t.dueDate || "-"}</td>
+          <td>${t.status}</td>
+          <td>${t.remarks || "-"}</td>
         `;
-          list.appendChild(li);
+          tableBody.appendChild(row);
         });
       }
 
